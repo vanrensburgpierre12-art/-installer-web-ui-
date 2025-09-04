@@ -1,19 +1,39 @@
 # Development Dockerfile for frontend
 FROM node:18-alpine
 
+# Set working directory
 WORKDIR /app
 
-# Copy package files
+# Install system dependencies and create non-root user
+RUN apk add --no-cache dumb-init && \
+    addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001 -G nodejs
+
+# Copy package files first for better caching
 COPY client/package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies with clean cache
+RUN npm install --no-audit --no-fund && \
+    npm cache clean --force
 
 # Copy source code
 COPY client/ ./
 
+# Set proper permissions
+RUN chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
+
 # Expose port
 EXPOSE 3000
+
+# Health check for development
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
 
 # Start the development server
 CMD ["npm", "start"]
