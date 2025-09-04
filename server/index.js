@@ -12,6 +12,8 @@ const clientRoutes = require('./routes/clients');
 const imageRoutes = require('./routes/images');
 const signOffRoutes = require('./routes/signoffs');
 const auditRoutes = require('./routes/audit');
+const userRoutes = require('./routes/users');
+const siteRoutes = require('./routes/sites');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -49,6 +51,8 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/signoffs', signOffRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/sites', siteRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
