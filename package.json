@@ -1,0 +1,19 @@
+{
+  "name": "vehicle-installation-tracker",
+  "version": "1.0.0",
+  "description": "Web application for tracking vehicle installations, repairs, and maintenance with audit trails",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": ["vehicle", "installation", "maintenance", "audit", "tracking"],
+  "author": "Your Company",
+  "license": "MIT"
+}
