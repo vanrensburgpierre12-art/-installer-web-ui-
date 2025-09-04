@@ -1,45 +1,67 @@
 # Multi-stage build for the React frontend
 FROM node:18-alpine as frontend-build
 
+# Set working directory
 WORKDIR /app/client
 
-# Copy package files
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# Copy package files first for better caching
 COPY client/package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies with clean cache
+RUN npm ci --only=production --no-audit --no-fund && \
+    npm cache clean --force
 
 # Copy source code
 COPY client/ ./
 
 # Build the React app
-RUN npm run build
+RUN npm run build && \
+    chown -R nextjs:nodejs /app/client
 
 # Backend stage
 FROM node:18-alpine as backend
 
+# Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apk add --no-cache postgresql-client
+# Install system dependencies and create non-root user
+RUN apk add --no-cache postgresql-client dumb-init && \
+    addgroup -g 1001 -S nodejs && \
+    adduser -S appuser -u 1001 -G nodejs
 
-# Copy package files
+# Copy package files first for better caching
 COPY server/package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies with clean cache
+RUN npm ci --only=production --no-audit --no-fund && \
+    npm cache clean --force
 
 # Copy server source code
 COPY server/ ./
 
-# Copy built frontend
+# Copy built frontend from frontend stage
 COPY --from=frontend-build /app/client/build ./public
 
-# Create uploads directory
-RUN mkdir -p uploads
+# Create necessary directories and set permissions
+RUN mkdir -p uploads logs && \
+    chown -R appuser:nodejs /app
+
+# Switch to non-root user
+USER appuser
 
 # Expose port
 EXPOSE 5000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:5000/health || exit 1
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
 
 # Start the application
 CMD ["npm", "start"]
