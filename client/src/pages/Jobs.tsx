@@ -35,6 +35,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 interface Job {
   id: string;
@@ -169,23 +170,40 @@ const Jobs: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingSpinner message="Loading jobs..." />;
   }
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Jobs</Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Box>
+          <Typography variant="h3" fontWeight="700" gutterBottom>
+            Jobs Management
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Track and manage vehicle installation jobs
+          </Typography>
+        </Box>
         <Button
           variant="contained"
+          size="large"
           startIcon={<AddIcon />}
           onClick={() => navigate('/jobs/create')}
+          sx={{
+            borderRadius: 2,
+            px: 3,
+            py: 1.5,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+              boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
+              transform: 'translateY(-2px)',
+            },
+            transition: 'all 0.3s ease-in-out',
+          }}
         >
-          Create Job
+          Create New Job
         </Button>
       </Box>
 
