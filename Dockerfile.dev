@@ -4,8 +4,11 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies and create non-root user
-RUN apk add --no-cache postgresql-client dumb-init && \
+# Update package index and install system dependencies
+RUN apk update && \
+    apk add --no-cache postgresql-client dumb-init || \
+    (echo "Primary repo failed, trying community repo..." && \
+     apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/v3.18/community postgresql-client dumb-init) && \
     addgroup -g 1001 -S nodejs && \
     adduser -S appuser -u 1001 -G nodejs
 
